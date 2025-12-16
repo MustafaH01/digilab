@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المختبر التشخيصي الرقمي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #0056b3;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #e0e0e0;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+            --danger-color: #dc3545;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+        }
+
+        .dark-mode {
+            --primary-color: #4da3ff;
+            --secondary-color: #1a73e8;
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --border-color: #333333;
+            --shadow: 0 4px 6px rgba(0,0,0,0.5);
+        }
+
+        /* 🆕 Senior Mode Styles (ميزة كبار السن) */
+        .senior-mode {
+            font-size: 130%; /* تكبير الخط العام */
+        }
+        .senior-mode .btn {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .senior-mode input, .senior-mode select {
+            padding: 15px;
+            font-size: 1.1rem;
+        }
+        .senior-mode .checkbox-label {
+            padding: 15px;
+            font-size: 1.1rem;
+        }
+
+        body { font-family: 'Tajawal', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; transition: 0.3s; }
+        header { background-color: var(--card-bg); padding: 1rem 2rem; box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        
+        .header-controls { display: flex; align-items: center; gap: 10px; }
+        .icon-btn { background: none; border: none; cursor: pointer; font-size: 1.4rem; color: var(--text-color); padding: 5px; border-radius: 50%; transition: 0.2s; }
+        .icon-btn:hover { transform: scale(1.1); background-color: rgba(0,0,0,0.05); }
+
+        .container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+        .card { background-color: var(--card-bg); border-radius: 12px; padding: 2rem; box-shadow: var(--shadow); margin-bottom: 2rem; transition: 0.3s; }
+
+        .btn { background-color: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 1rem; font-family: 'Tajawal', sans-serif; transition: 0.3s; }
+        .btn:hover { background-color: var(--secondary-color); }
+        .btn-outline { background-color: transparent; border: 2px solid var(--primary-color); color: var(--primary-color); }
+
+        .form-group { margin-bottom: 1.5rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+        input, select, textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-color); box-sizing: border-box; font-family: 'Tajawal'; }
+
+        .hidden { display: none !important; }
+
+        .symptoms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+        .checkbox-label { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; }
+        .checkbox-label:hover { background-color: rgba(0, 123, 255, 0.1); }
+        .checkbox-label input { width: auto; }
+
+        .priority-box { background-color: rgba(40, 167, 69, 0.1); border-right: 5px solid var(--success-color); padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .secondary-box { background-color: rgba(255, 193, 7, 0.1); border-right: 5px solid var(--warning-color); padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        /* RTL/LTR support for borders */
+        [dir="ltr"] .priority-box { border-right: none; border-left: 5px solid var(--success-color); }
+        [dir="ltr"] .secondary-box { border-right: none; border-left: 5px solid var(--warning-color); }
+        
+        h3.priority-title { color: #155724; margin-top: 0; display: flex; align-items: center; gap: 10px; }
+        h3.secondary-title { color: #856404; margin-top: 0; display: flex; align-items: center; gap: 10px; }
+        .dark-mode h3.priority-title { color: #75b798; }
+        .dark-mode h3.secondary-title { color: #ffda6a; }
+
+        .follow-up-card { background-color: rgba(0, 123, 255, 0.05); border: 1px solid var(--primary-color); padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .follow-up-card h4 { margin-top: 0; color: var(--primary-color); }
+
+        #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-color); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .loader { border: 8px solid var(--border-color); border-top: 8px solid var(--primary-color); border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .test-item { position: relative; cursor: help; border-bottom: 1px dashed var(--text-color); }
+        .tooltip-text { visibility: hidden; width: 220px; background-color: #333; color: #fff; text-align: center; border-radius: 6px; padding: 8px; position: absolute; z-index: 10; bottom: 130%; left: 50%; margin-left: -110px; opacity: 0; transition: opacity 0.3s; font-size: 0.85rem; pointer-events: none; }
+        .test-item:hover .tooltip-text { visibility: visible; opacity: 1; }
+
+        .test-note { font-size: 0.8rem; color: #d63384; background: rgba(214, 51, 132, 0.1); padding: 2px 8px; border-radius: 12px; margin-right: 8px; margin-left: 8px; display: inline-block; font-weight: 500; }
+        .dark-mode .test-note { color: #ff85c0; background: rgba(255, 133, 192, 0.15); }
+
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th, td { padding: 12px; border-bottom: 1px solid var(--border-color); text-align: right; vertical-align: top; }
+        [dir="ltr"] th, [dir="ltr"] td { text-align: left; }
+        th { background-color: rgba(0, 123, 255, 0.1); color: var(--primary-color); white-space: nowrap; }
+        .history-tests { font-size: 0.85rem; color: var(--text-color); opacity: 0.9; }
+
+        .report-info { display: none; border: 2px solid #333; padding: 15px; margin-bottom: 20px; border-radius: 5px; background: #fff; }
+        .report-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+
+        @media print {
+            header, .theme-switch, .btn, .header-controls, #step1, #step2, #step2_5, #historySection { display: none !important; }
+            body { background-color: white !important; color: black !important; font-size: 12pt; -webkit-print-color-adjust: exact; }
+            .container { max-width: 100%; margin: 0; padding: 0; }
+            .card { box-shadow: none; border: none; padding: 0; margin: 0; }
+            #step3 { display: block !important; padding: 20px; }
+            .report-info { display: block !important; border: 2px solid #000; color: #000; }
+            #step3::before { content: "📋 تقرير المختبر التشخيصي الرقمي"; display: block; text-align: center; font-size: 20pt; font-weight: bold; border-bottom: 3px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+            .priority-box, .secondary-box { background-color: #fff !important; border: 1px solid #000; color: #000 !important; page-break-inside: avoid; }
+            h3 { color: #000 !important; }
+            #step3::after { content: "تاريخ الطباعة: " attr(data-date) " | التوقيع: __________________"; display: block; margin-top: 50px; padding-top: 10px; border-top: 1px solid #ccc; text-align: center; font-size: 10pt; }
+            .test-note { color: #333; border: 1px solid #ccc; background: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="hidden">
+    <div class="loader"></div>
+    <div class="loading-text" id="loadingText" data-i18n="loading">جاري تحليل البيانات...</div>
+</div>
+
+<header>
+    <h1 id="appTitle" data-i18n="appTitle">🔬 المختبر التشخيصي الرقمي</h1>
+    <div class="header-controls">
+        <button class="icon-btn" onclick="resetForm()" title="Home">🏠</button>
+        <!-- زر كبار السن -->
+        <button class="icon-btn" id="seniorToggle" onclick="toggleSeniorMode()" title="Senior Mode">👓</button>
+        <!-- زر اللغة -->
+        <button class="icon-btn" id="langToggle" onclick="toggleLanguage()" title="Language">🌐</button>
+        <!-- زر الدارك مود -->
+        <button class="icon-btn" id="themeToggle" onclick="toggleTheme()" title="Theme">🌙</button>
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- Step 1: Info -->
+    <div id="step1" class="card">
+        <h2 data-i18n="step1Title">1️⃣ المعلومات الشخصية</h2>
+        <div class="form-group">
+            <label data-i18n="nameLabel">الاسم</label>
+            <input type="text" id="patientName" placeholder="...">
+        </div>
+        <div class="form-group">
+            <label data-i18n="ageLabel">العمر *</label>
+            <input type="number" id="age" placeholder="25">
+        </div>
+        <div class="form-group">
+            <label data-i18n="genderLabel">الجنس</label>
+            <select id="gender">
+                <option value="male" data-i18n="male">ذكر</option>
+                <option value="female" data-i18n="female">أنثى</option>
+            </select>
+        </div>
+        <button class="btn" onclick="goToStep2()" data-i18n="nextBtn">التالي &larr;</button>
+    </div>
+
+    <!-- Step 2: Symptoms -->
+    <div id="step2" class="card hidden">
+        <h2 data-i18n="step2Title">2️⃣ الأعراض والشكوى</h2>
+        <p data-i18n="selectSymptoms">اختر كل ما تشعر به:</p>
+        <div class="symptoms-grid">
+            <label class="checkbox-label"><input type="checkbox" value="صداع" class="symptom"> <span data-i18n="s_headache">صداع</span></label>
+            <label class="checkbox-label"><input type="checkbox" value="دوخة" class="symptom"> <span data-i18n="s_dizzy">دوخة / دوار</span></label>
+            <label class="checkbox-label"><input type="checkbox" value="ألم صدر" class="symptom"> <span data-i18n="s_chest">ألم في الصدر</span></label>
+            <label class="checkbox-label"><input type="checkbox" value="ألم بطن" class="symptom"> <span data-i18n="s_abdominal">ألم في البطن</span></label>
+            <label class="checkbox-label"><input type="checkbox" value="تعب" class="symptom"> <span data-i18n="s_fatigue">تعب وإرهاق</span></label>
+            <label class="checkbox-label"><input type="checkbox" value="حرارة" class="symptom"> <span data-i18n="s_fever">ارتفاع حرارة</span></label>
+            <label class="checkbox-label"><input type="checkbox" value="شحوب" class="symptom"> <span data-i18n="s_pale">شحوب</span></label>
+            <label class="checkbox-label"><input type="checkbox" value="أرق" class="symptom"> <span data-i18n="s_insomnia">أرق (قلة نوم)</span></label>
+            <label class="checkbox-label"><input type="checkbox" value="تساقط شعر" class="symptom"> <span data-i18n="s_hairloss">تساقط شعر</span></label>
+        </div>
+        <button class="btn btn-outline" style="margin-top:20px" onclick="goBackToStep1()" data-i18n="prevBtn">السابق</button>
+        <button class="btn" style="margin-top:20px" onclick="checkFollowUps()" data-i18n="detailsBtn">التالي: تفاصيل الأعراض &larr;</button>
+    </div>
+
+    <!-- Step 2.5: Follow Up Questions -->
+    <div id="step2_5" class="card hidden">
+        <h2 data-i18n="step25Title">2️⃣.5️⃣ أسئلة لتدقيق التشخيص</h2>
+        <p data-i18n="answerAccurately">يرجى الإجابة عن هذه الأسئلة بدقة:</p>
+        <div id="followUpContainer"></div>
+        <button class="btn btn-outline" onclick="backToStep2()" data-i18n="backToSymp">عودة للأعراض</button>
+        <button class="btn" onclick="startFinalAnalysis()" data-i18n="showResults">إظهار النتائج &larr;</button>
+    </div>
+
+    <!-- Step 3: Results -->
+    <div id="step3" class="card hidden">
+        <div id="reportInfoContainer" class="report-info"></div>
+
+        <div id="redFlagArea"></div>
+
+        <!-- Containers for Tests -->
+        <div id="testsContainer">
+            <div class="priority-box">
+                <h3 class="priority-title" data-i18n="priorityTitle">🔴 التحاليل الأساسية</h3>
+                <p style="font-size:0.9rem; margin-bottom:10px;" data-i18n="priorityDesc">هذه التحاليل ضرورية جداً.</p>
+                <ul id="primaryTestsList"></ul>
+            </div>
+
+            <div class="secondary-box">
+                <h3 class="secondary-title" data-i18n="secondaryTitle">🟡 تحاليل إضافية</h3>
+                <p style="font-size:0.9rem; margin-bottom:10px;" data-i18n="secondaryDesc">يستحسن عملها لزيادة الدقة.</p>
+                <ul id="secondaryTestsList"></ul>
+            </div>
+        </div>
+
+        <div style="margin-top: 20px; display:flex; gap:10px;">
+            <button class="btn" onclick="resetForm()" data-i18n="newDiag">تشخيص جديد</button>
+            <button class="btn btn-outline" onclick="window.print()" data-i18n="printBtn">طباعة التقرير</button>
+        </div>
+    </div>
+
+    <!-- History -->
+    <div class="card" id="historySection">
+        <h2 data-i18n="historyTitle">📂 السجل السابق</h2>
+        <div style="overflow-x: auto;">
+            <table id="historyTable">
+                <thead>
+                    <tr>
+                        <th width="15%" data-i18n="h_date">التاريخ</th>
+                        <th width="20%" data-i18n="h_patient">المريض</th>
+                        <th width="25%" data-i18n="h_symp">الأعراض</th>
+                        <th width="40%" data-i18n="h_tests">التحاليل</th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody"></tbody>
+            </table>
+        </div>
+        <button class="btn btn-outline" onclick="clearHistory()" style="margin-top:10px; font-size:0.8rem" data-i18n="clearHistory">مسح السجل</button>
+    </div>
+
+</div>
+
+<script>
+    let currentUserData = {};
+    let selectedSymptoms = [];
+    let followUpAnswers = {};
+    let currentLang = 'ar'; // Default Language
+
+    // --- 🌍 Translations Object ---
+    const translations = {
+        ar: {
+            appTitle: "🔬 المختبر التشخيصي الرقمي",
+            step1Title: "1️⃣ المعلومات الشخصية",
+            nameLabel: "الاسم",
+            ageLabel: "العمر *",
+            genderLabel: "الجنس",
+            male: "ذكر",
+            female: "أنثى",
+            nextBtn: "التالي ←",
+            step2Title: "2️⃣ الأعراض والشكوى",
+            selectSymptoms: "اختر كل ما تشعر به:",
+            s_headache: "صداع", s_dizzy: "دوخة / دوار", s_chest: "ألم صدر", s_abdominal: "ألم بطن", s_fatigue: "تعب", s_fever: "حرارة", s_pale: "شحوب", s_insomnia: "أرق", s_hairloss: "تساقط شعر",
+            prevBtn: "السابق",
+            detailsBtn: "التالي: تفاصيل الأعراض ←",
+            step25Title: "2️⃣.5️⃣ أسئلة التدقيق",
+            answerAccurately: "يرجى الإجابة بدقة:",
+            backToSymp: "عودة للأعراض",
+            showResults: "إظهار النتائج ←",
+            priorityTitle: "🔴 التحاليل الأساسية",
+            priorityDesc: "ضرورية لبدء التشخيص.",
+            secondaryTitle: "🟡 تحاليل إضافية",
+            secondaryDesc: "لزيادة الدقة.",
+            newDiag: "تشخيص جديد",
+            printBtn: "طباعة التقرير",
+            historyTitle: "📂 السجل السابق",
+            h_date: "التاريخ", h_patient: "المريض", h_symp: "الأعراض", h_tests: "التحاليل",
+            clearHistory: "مسح السجل",
+            loading: "جاري تحليل البيانات...",
+            alertAge: "يرجى إدخال عمر صحيح",
+            alertSelect: "اختر عرضاً واحداً على الأقل",
+            emergencyTitle: "⚠️ تنبيه هام (حالة طارئة)",
+            emergencyText: "بناءً على الأعراض (وخاصة الخطيرة منها)، ننصحك بالتوجه فوراً إلى الطوارئ أو استشارة طبيب مختص وعدم الاكتفاء بالتحاليل.",
+            patientNameLabel: "اسم المريض:",
+            dateLabel: "التاريخ:",
+            ageText: "العمر:",
+            genderText: "الجنس:"
+        },
+        en: {
+            appTitle: "🔬 Digital Diagnostic Lab",
+            step1Title: "1️⃣ Personal Information",
+            nameLabel: "Name",
+            ageLabel: "Age *",
+            genderLabel: "Gender",
+            male: "Male",
+            female: "Female",
+            nextBtn: "Next →",
+            step2Title: "2️⃣ Symptoms",
+            selectSymptoms: "Select what you feel:",
+            s_headache: "Headache", s_dizzy: "Dizziness", s_chest: "Chest Pain", s_abdominal: "Abdominal Pain", s_fatigue: "Fatigue", s_fever: "Fever", s_pale: "Pallor", s_insomnia: "Insomnia", s_hairloss: "Hair Loss",
+            prevBtn: "Back",
+            detailsBtn: "Next: Details →",
+            step25Title: "2️⃣.5️⃣ Follow-up Questions",
+            answerAccurately: "Please answer accurately:",
+            backToSymp: "Back to Symptoms",
+            showResults: "Show Results →",
+            priorityTitle: "🔴 Primary Tests",
+            priorityDesc: "Essential for diagnosis.",
+            secondaryTitle: "🟡 Secondary Tests",
+            secondaryDesc: "Recommended for accuracy.",
+            newDiag: "New Diagnosis",
+            printBtn: "Print Report",
+            historyTitle: "📂 Previous Records",
+            h_date: "Date", h_patient: "Patient", h_symp: "Symptoms", h_tests: "Tests",
+            clearHistory: "Clear History",
+            loading: "Analyzing Data...",
+            alertAge: "Please enter a valid age",
+            alertSelect: "Select at least one symptom",
+            emergencyTitle: "⚠️ EMERGENCY ALERT",
+            emergencyText: "Based on your symptoms (especially critical ones), please go to the Emergency Room (ER) or consult a doctor immediately. Do NOT rely solely on lab tests.",
+            patientNameLabel: "Patient Name:",
+            dateLabel: "Date:",
+            ageText: "Age:",
+            genderText: "Gender:"
+        }
+    };
+
+    // --- Database (Multilingual Support) ---
+    // Note: Database keys remain Arabic for internal logic, but display can be handled via mapping if needed. 
+    // For simplicity in this demo, test names are kept in English (Medical Standard).
+    const medicalDatabase = {
+        "صداع": { primary: ["CBC", "Blood Pressure Check", "Eye Exam"], secondary: ["CT Brain", "ESR", "Sinus X-ray"] },
+        "دوخة": { primary: ["CBC", "Random Blood Sugar", "Blood Pressure"], secondary: ["Ferritin", "Vitamin B12", "Ear Exam"] },
+        "ألم صدر": { primary: ["ECG", "Troponin", "Lipid Profile"], secondary: ["Chest X-Ray", "Echocardiogram", "D-Dimer"] },
+        "ألم بطن": { primary: ["Stool Analysis", "Abdominal Ultrasound", "CBC"], secondary: ["H. Pylori", "Liver Enzymes", "Amylase"] },
+        "تعب": { primary: ["CBC", "TSH", "Vitamin D"], secondary: ["Kidney Function", "Liver Function", "Iron Profile"] },
+        "أرق": { primary: ["TSH", "Magnesium Level"], secondary: ["Cortisol", "Vitamin D"] },
+        "حرارة": { primary: ["CBC", "CRP"], secondary: ["Urine Analysis", "Blood Culture"] },
+        "شحوب": { primary: ["CBC", "Iron Profile"], secondary: ["Vitamin B12", "Stool Occult Blood"] },
+        "تساقط شعر": { primary: ["Ferritin", "TSH", "Zinc"], secondary: ["Vitamin D", "Hormonal Profile"] }
+    };
+
+    const testInstructions = {
+        "Lipid Profile": "⛔ Fasting 10-12h | صيام 10-12 ساعة",
+        "Cortisol": "☀️ Morning (8-9 AM) | صباحاً",
+        "Iron Profile": "☀️ Morning Fasting | صيام صباحي",
+        "Abdominal Ultrasound": "⛔ Fasting 6-8h | صيام 6-8 ساعات",
+        "Stool Analysis": "⚠️ No Antibiotics | بدون مضاد حيوي",
+        "TSH": "☀️ Morning preferred | يفضل صباحاً"
+    };
+
+    const followUpQuestions = {
+        "صداع": {
+            id: "headache_q",
+            q_ar: "كيف تصف الصداع؟", q_en: "Describe the headache?",
+            opts_ar: ["مستمر (توتر)", "نابض (شقيقة)", "مفاجئ وشديد جداً"],
+            opts_en: ["Constant (Tension)", "Throbbing (Migraine)", "Sudden & Severe"]
+        },
+        "ألم صدر": {
+            id: "chest_q",
+            q_ar: "طبيعة ألم الصدر؟", q_en: "Chest pain type?",
+            opts_ar: ["ثقل/ضغط", "وخز", "مع التنفس"],
+            opts_en: ["Heavy/Pressure", "Sharp/Stabbing", "With Breathing"]
+        },
+        "ألم بطن": {
+            id: "abdomen_q",
+            q_ar: "مكان الألم؟", q_en: "Pain location?",
+            opts_ar: ["معدة", "زائدة (يمين أسفل)", "منتشر"],
+            opts_en: ["Stomach", "Appendix (Lower Right)", "Generalized"]
+        }
+    };
+
+    // --- Helper: Escape HTML ---
+    function escapeHtml(text) {
+        if (!text) return text;
+        return text.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    // --- 🌍 Language Logic ---
+    function toggleLanguage() {
+        currentLang = currentLang === 'ar' ? 'en' : 'ar';
+        document.documentElement.lang = currentLang;
+        document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+        updateUIText();
+    }
+
+    function updateUIText() {
+        const t = translations[currentLang];
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if(t[key]) el.textContent = t[key];
+        });
+        
+        // Update placeholders
+        document.getElementById('patientName').placeholder = currentLang === 'ar' ? 'اسم المريض' : 'Patient Name';
+        
+        // Redraw history to update headers/text direction
+        renderHistory(); 
+    }
+
+    // --- 👓 Senior Mode Logic ---
+    function toggleSeniorMode() {
+        document.body.classList.toggle('senior-mode');
+    }
+
+    // --- Navigation ---
+    function goToStep2() {
+        const age = document.getElementById('age').value;
+        const ageVal = parseInt(age);
+        if (!age || isNaN(ageVal) || ageVal < 1 || ageVal > 120) {
+            alert(translations[currentLang].alertAge);
+            return;
+        }
+        currentUserData = {
+            name: document.getElementById('patientName').value || (currentLang==='ar'?"غير محدد":"Unknown"),
+            age: age,
+            gender: document.getElementById('gender').value
+        };
+        document.getElementById('step1').classList.add('hidden');
+        document.getElementById('step2').classList.remove('hidden');
+    }
+
+    function goBackToStep1() {
+        document.getElementById('step2').classList.add('hidden');
+        document.getElementById('step1').classList.remove('hidden');
+    }
+
+    // --- Logic: Follow-ups ---
+    function checkFollowUps() {
+        const checkboxes = document.querySelectorAll('.symptom:checked');
+        selectedSymptoms = Array.from(checkboxes).map(cb => cb.value);
+        if (selectedSymptoms.length === 0) { alert(translations[currentLang].alertSelect); return; }
+
+        const container = document.getElementById('followUpContainer');
+        container.innerHTML = "";
+        let hasQuestions = false;
+
+        selectedSymptoms.forEach(symptom => {
+            if (followUpQuestions[symptom]) {
+                hasQuestions = true;
+                const qData = followUpQuestions[symptom];
+                const qText = currentLang === 'ar' ? qData.q_ar : qData.q_en;
+                const opts = currentLang === 'ar' ? qData.opts_ar : qData.opts_en;
+                
+                container.innerHTML += `
+                    <div class="follow-up-card">
+                        <h4>${qText}</h4>
+                        <select id="${qData.id}" class="follow-up-select">
+                            ${opts.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                        </select>
+                    </div>
+                `;
+            }
+        });
+
+        if (hasQuestions) {
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step2_5').classList.remove('hidden');
+            window.scrollTo(0,0);
+        } else {
+            startFinalAnalysis();
+        }
+    }
+
+    function backToStep2() {
+        document.getElementById('step2_5').classList.add('hidden');
+        document.getElementById('step2').classList.remove('hidden');
+    }
+
+    function startFinalAnalysis() {
+        const selects = document.querySelectorAll('.follow-up-select');
+        selects.forEach(sel => { followUpAnswers[sel.id] = sel.value; });
+
+        document.getElementById('step2').classList.add('hidden');
+        document.getElementById('step2_5').classList.add('hidden');
+        
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.classList.remove('hidden');
+
+        setTimeout(() => {
+            overlay.classList.add('hidden');
+            generateReport();
+        }, 2000);
+    }
+
+    // --- 🚨 EMERGENCY LOGIC UPDATED HERE ---
+    function generateReport() {
+        let primarySet = new Set();
+        let secondarySet = new Set();
+        let redFlags = [];
+
+        selectedSymptoms.forEach(symptom => {
+            if(medicalDatabase[symptom]) {
+                medicalDatabase[symptom].primary.forEach(t => primarySet.add(t));
+                if(medicalDatabase[symptom].secondary) {
+                    medicalDatabase[symptom].secondary.forEach(t => secondarySet.add(t));
+                }
+            }
+        });
+
+        // Check Emergency Conditions
+        // Note: checking partial strings to match both AR/EN options logic
+        if(followUpAnswers['chest_q'] && (followUpAnswers['chest_q'].includes("ثقل") || followUpAnswers['chest_q'].includes("Heavy"))) {
+            redFlags.push(true);
+        }
+        if(followUpAnswers['headache_q'] && (followUpAnswers['headache_q'].includes("شديد") || followUpAnswers['headache_q'].includes("Severe"))) {
+            primarySet.add("CT Brain"); // Only keep if not full emergency, but let's strictly follow user rule
+            redFlags.push(true);
+        }
+        if(selectedSymptoms.includes("ألم صدر")) redFlags.push(true); // Always red flag for chest pain in this demo
+
+        // Add Age Logic
+        if(currentUserData.age > 45) {
+            primarySet.add("Lipid Profile");
+            secondarySet.add("HbA1c");
+        }
+
+        // --- Render Report ---
+        const rfDiv = document.getElementById('redFlagArea');
+        const testsContainer = document.getElementById('testsContainer');
+
+        if(redFlags.length > 0) {
+            // 🚨 EMERGENCY MODE: Show Alert, HIDE Tests
+            rfDiv.innerHTML = `
+                <div style="background:rgba(220, 53, 69, 0.1); border:2px solid #dc3545; padding:20px; border-radius:8px; margin-bottom:20px; color:#dc3545; text-align:center;">
+                    <h2 style="margin-top:0">${translations[currentLang].emergencyTitle}</h2>
+                    <p style="font-size:1.2rem; font-weight:bold;">${translations[currentLang].emergencyText}</p>
+                </div>
+            `;
+            testsContainer.style.display = 'none'; // Hide tests
+        } else {
+            // NORMAL MODE
+            rfDiv.innerHTML = "";
+            testsContainer.style.display = 'block'; // Show tests
+            
+            document.getElementById('primaryTestsList').innerHTML = Array.from(primarySet).map(t => createTestItem(t)).join('');
+            document.getElementById('secondaryTestsList').innerHTML = Array.from(secondarySet).map(t => createTestItem(t)).join('');
+        }
+
+        // Print Header
+        const dateNow = new Date().toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US');
+        const t = translations[currentLang];
+        const genderDisplay = currentUserData.gender === 'male' ? t.male : t.female;
+        
+        document.getElementById('reportInfoContainer').innerHTML = `
+            <div class="report-row">
+                <div><strong>${t.patientNameLabel}</strong> ${escapeHtml(currentUserData.name)}</div>
+                <div><strong>${t.dateLabel}</strong> ${dateNow}</div>
+            </div>
+            <div class="report-row">
+                <div><strong>${t.ageText}</strong> ${currentUserData.age}</div>
+                <div><strong>${t.genderText}</strong> ${genderDisplay}</div>
+            </div>
+        `;
+        document.getElementById('step3').setAttribute('data-date', dateNow);
+
+        document.getElementById('step3').classList.remove('hidden');
+        
+        // Save History (Save what happened)
+        // If emergency, we save "Emergency Referral" as tests
+        const testsToSave = redFlags.length > 0 ? "⚠️ EMERGENCY / طوارئ" : [...primarySet, ...secondarySet].join(', ');
+        saveHistory(testsToSave, selectedSymptoms.join(', '));
+    }
+
+    function createTestItem(testName) {
+        // Find matching instruction (Check substring for simplicity)
+        let instr = "";
+        Object.keys(testInstructions).forEach(key => {
+            if(testName.includes(key)) instr = testInstructions[key];
+        });
+        
+        const noteSpan = instr ? `<span class="test-note">${instr}</span>` : "";
+        return `<li><span class="test-item">${testName}</span>${noteSpan}</li>`;
+    }
+
+    // --- History System ---
+    function saveHistory(testsStr, sympStr) {
+        const entry = {
+            date: new Date().toLocaleDateString(),
+            name: currentUserData.name,
+            age: currentUserData.age,
+            symp: sympStr,
+            tests: testsStr
+        };
+        let h = JSON.parse(localStorage.getItem('labHistory')) || [];
+        h.unshift(entry);
+        localStorage.setItem('labHistory', JSON.stringify(h));
+        renderHistory();
+    }
+
+    function renderHistory() {
+        let h = JSON.parse(localStorage.getItem('labHistory')) || [];
+        const body = document.getElementById('historyBody');
+        const t = translations[currentLang];
+        
+        // Update Headers
+        document.querySelector('#historyTable th:nth-child(1)').textContent = t.h_date;
+        document.querySelector('#historyTable th:nth-child(2)').textContent = t.h_patient;
+        document.querySelector('#historyTable th:nth-child(3)').textContent = t.h_symp;
+        document.querySelector('#historyTable th:nth-child(4)').textContent = t.h_tests;
+
+        if (h.length === 0) {
+            body.innerHTML = `<tr><td colspan="4" style="text-align:center">${currentLang==='ar'?'لا يوجد سجلات':'No records'}</td></tr>`;
+            return;
+        }
+        body.innerHTML = h.map(i => `
+            <tr>
+                <td>${i.date}</td>
+                <td><strong>${escapeHtml(i.name)}</strong><br><span style="font-size:0.8rem; color:#666">${escapeHtml(i.age)}</span></td>
+                <td>${escapeHtml(i.symp)}</td>
+                <td><div class="history-tests">${escapeHtml(i.tests)}</div></td>
+            </tr>
+        `).join('');
+    }
+
+    function clearHistory() { 
+        if(confirm('Delete all history? / هل أنت متأكد؟')) {
+            localStorage.removeItem('labHistory'); 
+            renderHistory(); 
+        }
+    }
+    
+    function resetForm() { location.reload(); }
+    
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+    }
+    
+    window.onload = function() {
+        if(localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
+        renderHistory();
+        updateUIText(); // Ensure correct lang on load
+    }
+</script>
+
+</body>
+</html>
